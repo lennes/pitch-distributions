@@ -2,6 +2,7 @@
 #
 # Sound file name must consist of:
 # conversationCode_speakerCode1[_speakerCode2][_speakerCode3].wav
+# TextGrid file name must be identical with the corresponding sound file except 
 # for the file extension, which must be .TextGrid.
 # The interval tier to be used in the analysis of a particular speaker must be labeled 
 # with the speaker's code that is used in the file names. 
