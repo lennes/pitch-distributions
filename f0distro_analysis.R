@@ -399,14 +399,20 @@ for (spk in 1:length(speakers)){
 			}
 	}
 }
-
+# Calculate mean and standard deviation at each sample size (adding columns):
 bootstrap.mean <- transform(bootstrap.mean, MEAN=apply(bootstrap.mean,1, mean, na.rm = TRUE))
 bootstrap.mean <- transform(bootstrap.mean, SD=apply(bootstrap.mean,1, sd, na.rm = TRUE))
 bootstrap.mode <- transform(bootstrap.mode, MEAN=apply(bootstrap.mode,1, mean, na.rm = TRUE))
 bootstrap.mode <- transform(bootstrap.mode, SD=apply(bootstrap.mode,1, sd, na.rm = TRUE))
 rownames(bootstrap.mean) <- c(1:steps*step)
 rownames(bootstrap.mode) <- c(1:steps*step)
-
+# Get example means at 1000, 3000 and 6000 samples (reported in Lennes et al.)
+bootstrap.mean[c("1000","3000","6000"),c("MEAN","SD")]
+bootstrap.mode[c("1000","3000","6000"),c("MEAN","SD")]
+# Save the bootstrapped tables (otherwise it would be impossible to collect the exact same values again, 
+# since they were drawn at random!)
+write.table(bootstrap.mean, file = "data/bootstrap.mean.csv")
+write.table(bootstrap.mode, file = "data/bootstrap.mode.csv")
 #
 # Plot the bootstrapped results for mean:
 # (figure 6 in Lennes et al.)

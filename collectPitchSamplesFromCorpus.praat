@@ -35,11 +35,10 @@
 # In case the speakers share the same audio file and overlap between 
 # speakers is found, the overlapping portions should be recorded as 
 # missing values (default NA).
-#
-# This script is distributed under the latest version of the GNU General Public License.
 # 
 # Mietta Lennes 9.9.2015
 
+# The subdirectories are defined here:
 inputdir$ = "corpus/"
 outputdir$ = "data/"
 pitchdir$ = "pitch/"
