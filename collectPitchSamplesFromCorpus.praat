@@ -1,13 +1,28 @@
-# This script will collect pitch data from annotated audio files (WAV/AIF + Praat TextGrid).
+# This Praat script will collect pitch data from audio files (WAV or AIF).
+# In case you only wish to obtain pitch data only from those time intervals where a 
+# particular speaker is speaking, you would first need to annotate the audio files with 
+# the Praat program. 
+# NB: The results will be more unreliable in case the audio files contain a lot of 
+# background noise and/or if several speakers are overlapping each other.
 #
-# Sound file name must consist of:
+# INITIAL SETUP:
+# The TextGrid files must be saved in the same directory with the audio (default: 
+# in the subdirectory named corpus/).
+#
+# The script can only be executed by the Praat program. 
+# You may open and run the script 
+# in Praat, or you can use the command line interface. More information can be found at
+# http://www.praat.org.
+#
+#** FILE NAMING PROTOCOL
+# Each sound file name must consist of:
 # conversationCode_speakerCode1[_speakerCode2][_speakerCode3].wav
-# TextGrid file name must be identical with the corresponding sound file except 
+# TextGrid file names must be identical with the corresponding sound files except 
 # for the file extension, which must be .TextGrid.
 # The interval tier to be used in the analysis of a particular speaker must be labeled 
 # with the speaker's code that is used in the file names. 
 # In case several speakers are present in the same audio file, the file name should 
-# include all the corresponding speaker names/codes, separated with underscores.
+# include all the corresponding speaker names/codes, separated by underscores.
 # For instance:
 # A03_F4_M2.wav and A03_F4_M2.TextGrid (for dialogue A03 with a female speaker F4 and 
 # a male speaker M2)
@@ -15,9 +30,23 @@
 # A03_F4.wav and A03_F4.TextGrid for speaker F4, and
 # A03_M2.wav and A03_M2.TextGrid for speaker M2.
 #
-# The analysis parameters for each speaker (or pair of WAV+TextGrid files) may optionally 
-# be provided in the text file parms.txt.
-# Result files:
+# SPEAKER-SPECIFIC PITCH ANALYSIS PARAMETERS (OPTIONAL)
+# The pitch analysis parameters (minimum and maximum pitch) for each speaker 
+# may optionally be provided in the tabulated text file parms.txt. 
+# Each line should contain the speaker code, the minimum pitch in Hz and the maximum 
+# pitch in Hz, separated with tabs.
+# A model file is provided within the corpus/ subdirectory.
+# NB: The default parameters will be applied to those speakers that are not mentioned in the 
+# parms.txt file!
+#
+#** IMPORTANT TIP:
+# In case you do not know the speakers' voice ranges yet, you can run this script in 
+# two stages. Run once with the default pitch parameters, i.e., without the parms.txt 
+# file. Next, determine the modal voice range of each speaker by inspecting the speaker's
+# pitch distribution. Now, save the analysis parameters in the file parms.txt and run the 
+# script for the second time in order to get more refined results.
+#
+# RESULT FILES:
 #  - pitch_utterances_all.txt: values recorded from within annotated utterances only,
 #         using the default parameters
 #  - pitch_utterances_indi.txt: values recorded from within annotated utterances only 
@@ -26,37 +55,63 @@
 # parameters defined in parms.txt
 #  - pitch_all.txt: all values even outside min_pitch and max_pitch are included 
 #
-# .Pitch files:
-# outputdir/soundname_raw.Pitch = all pitch values from raw audio, default max & min
-# outputdir/[conversationID_]speaker.Pitch = raw audio, individual max & min parms
-# The individual, short Pitch objects calculated from utterances are not saved.
+#** PITCH FILES
+# The resulting .Pitch files for each complete audio file will be stored and, optionally, 
+# re-used in the next run.
+#   outputdir/soundname_raw.Pitch = all pitch values from raw audio, default max & min
+#   outputdir/[conversationID_]speaker.Pitch = raw audio, individual max & min parms
+# The short Pitch objects calculated from individual annotated utterances are not saved.
 #
 # NOT IMPLEMENTED YET: 
 # In case the speakers share the same audio file and overlap between 
 # speakers is found, the overlapping portions should be recorded as 
 # missing values (default NA).
 # 
+# LICENSE
+# This script is licensed under the latest version of the GNU General Public License.
+# Please visit https://github.com/lennes/pitch-distributions
+# for license information and for new and improved versions of this script.
+#
 # Mietta Lennes 9.9.2015
+# - Latest update (better instructions, bug fixes) 10.2.2016
+#______________________________________________________________________________
+
+
+##### Begin user-defined options #####
+##
+#   Before running the script, please edit the values for the variables below if required.
 
 # The subdirectories are defined here:
 inputdir$ = "corpus/"
 outputdir$ = "data/"
 pitchdir$ = "pitch/"
 
-# This is the time step between the consecutive pitch points whose values will be
-# collected to the data file:
+# NB: Old output files in data/ will ALWAYS be deleted, in case they exist!!!
+# If you wish to keep them, please rename or move the files out of the data/ directory.
+
+# Should we re-use the existing pitch files calculated in the previous run, in order to 
+# save time? 
+# (1 = yes, use the old ones when available; 0 = no, calculate new Pitch files each time)
+# This only affects the pitch files calculated from the entire unannotated audio files.
+# NB: In case you have added or changed any of the default or the speaker-specific 
+# pitch parameters, you should select 0!
+reuse_old_pitch_files = 0
+
+# The default pitch analysis parameters (minimum and maximum pitch in Hertz) will be
+# applied when the individual parameters are not available. These will always affect the
+# pitch data calculated from raw audio (pitch_all.txt).
+default_min = 50
+default_max = 600
+
+# This is the time step (in seconds) between the consecutive pitch points whose values
+# will be collected to the data files:
 time_step_F0 = 0.02
 
 # This is the maximum duration (seconds) of the audio file that will be included in the 
-# analysis (0 = include the total duration):
+# analysis (0 = always include the total duration):
 max_duration = 720     
 # 720 = a maximum of 12 minutes will be analyzed per file
-# (1800 = a maximum of 30 minutes will be analyzed per file)
-
-# The default pitch analysis parameters to be applied when individual parms are not 
-# available:
-default_min = 50
-default_max = 600
+# (e.g., 1800 = a maximum of 30 minutes will be analyzed per file)
 
 # The amount of time that should be included in the pitch analysis window around
 # each annotated utterance:
@@ -65,6 +120,10 @@ utterance_margin = 0.3
 
 # The string to use for undefined or missing values:
 empty_field$ = "NA"
+
+##
+##
+##### End of user-defined options #####
 
 writeInfoLine: "Collect pitch samples from files in 'inputdir$'"
 
@@ -319,7 +378,7 @@ procedure AnalyzeRawAudioFile
 
 	pitchfile_all$ = pitchdir$ + soundname$ + "_raw.Pitch"
 
-	if fileReadable(pitchfile_all$) = 0
+	if fileReadable(pitchfile_all$) = 0 and reuse_old_pitch_files = 1
 		min_pitch = default_min
 		max_pitch = default_max
 		# Create the Pitch object:
